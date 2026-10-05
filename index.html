@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>El Laberinto de las Condiciones | Experiencia Crítica Transmedia</title>
+  <style>
+    :root {
+      --bg-color: #0d0f12;
+      --panel-bg: #161b22;
+      --card-bg: #21262d;
+      --text-main: #f0f6fc;
+      --text-muted: #8b949e;
+      --accent-cyan: #58a6ff;
+      --accent-green: #3fb950;
+      --accent-red: #f85149;
+      --accent-warning: #d29922;
+      --border-color: #30363d;
+      --shadow: 0 8px 24px rgba(0,0,0,0.5);
+    }
+
+    .light-theme {
+      --bg-color: #f6f8fa;
+      --panel-bg: #ffffff;
+      --card-bg: #f3f4f6;
+      --text-main: #1f2328;
+      --text-muted: #656d76;
+      --accent-cyan: #0969da;
+      --accent-green: #1a7f37;
+      --accent-red: #cf222e;
+      --accent-warning: #9a6700;
+      --border-color: #d0d7de;
+      --shadow: 0 8px 24px rgba(140,149,159,0.2);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* HEADER & CONTROLES */
+    header {
+      background-color: var(--panel-bg);
+      border-bottom: 1px solid var(--border-color);
+      padding: 0.75rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand h1 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .brand span {
+      background: var(--accent-cyan);
+      color: #fff;
+      font-size: 0.65rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      font-weight: 800;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .btn-icon {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .btn-icon:hover {
+      background-color: var(--card-bg);
+    }
+
+    /* MAPA DE NAVEGACIÓN ETAPAS */
+    nav.stage-tracker {
+      background-color: var(--panel-bg);
+      border-bottom: 1px solid var(--border-color);
+      padding: 0.5rem 1rem;
+      display: flex;
+      justify-content: space-around;
+      overflow-x: auto;
+    }
+
+    .step-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      padding: 0.3rem 0.6rem;
+      border-radius: 20px;
+    }
+
+    .step-item.active {
+      color: var(--accent-cyan);
+      font-weight: 600;
+      background-color: rgba(88, 166, 255, 0.1);
+    }
+
+    .step-item.completed {
+      color: var(--accent-green);
+    }
+
+    .step-item .circle {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 1px solid var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+    }
+
+    .step-item.active .circle {
+      border-color: var(--accent-cyan);
+      background-color: var(--accent-cyan);
+      color: #fff;
+    }
+
+    .step-item.completed .circle {
+      border-color: var(--accent-green);
+      background-color: var(--accent-green);
+      color: #fff;
+    }
+
+    /* CONTENEDOR PRINCIPAL */
+    main {
+      flex: 1;
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 1.5rem;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (min-width: 900px) {
+      main {
+        grid-template-columns: 1fr 340px;
+      }
+    }
+
+    /* ESCENARIO SVG Y NARRATIVA */
+    .stage-container {
+      background-color: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      box-shadow: var(--shadow);
+      position: relative;
+    }
+
+    .stage-header {
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.75rem;
+    }
+
+    .stage-header h2 {
+      font-size: 1.3rem;
+      color: var(--accent-cyan);
+      margin-bottom: 0.25rem;
+    }
+
+    .stage-header .subtitle {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .svg-viewport {
+      width: 100%;
+      height: 280px;
+      background-color: var(--card-bg);
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* CITA Y NARRATIVA */
+    .narrative-box {
+      font-size: 0.95rem;
+      line-height: 1.5;
+      color: var(--text-main);
+    }
+
+    .quote-card {
+      background-color: var(--card-bg);
+      border-left: 3px solid var(--accent-cyan);
+      padding: 0.8rem 1rem;
+      margin-top: 0.75rem;
+      border-radius: 0 6px 6px 0;
+      font-style: italic;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* ZONA INTERACTIVA / BIFURCACIONES */
+    .interaction-area {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .interaction-area h3 {
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--accent-warning);
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+    }
+
+    @media (min-width: 600px) {
+      .options-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .option-btn {
+      background-color: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 0.8rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      text-align: left;
+      font-size: 0.88rem;
+      line-height: 1.3;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .option-btn:hover {
+      border-color: var(--accent-cyan);
+      transform: translateY(-2px);
+    }
+
+    .option-btn strong {
+      color: var(--accent-cyan);
+    }
+
+    /* DASHBOARD LATERAL DE METRICAS */
+    aside.metrics-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .widget {
+      background-color: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.2rem;
+      box-shadow: var(--shadow);
+    }
+
+    .widget h3 {
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+      letter-spacing: 0.5px;
+    }
+
+    .metric-gauge {
+      margin-bottom: 1rem;
+    }
+
+    .gauge-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .progress-bar {
+      height: 8px;
+      background-color: var(--card-bg);
+      border-radius: 4px;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background-color: var(--accent-cyan);
+      transition: width 0.5s ease;
+    }
+
+    .progress-fill.danger { background-color: var(--accent-red); }
+    .progress-fill.warning { background-color: var(--accent-warning); }
+    .progress-fill.success { background-color: var(--accent-green); }
+
+    /* LOG DE DATOS RECOLECTADOS */
+    .data-log {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      max-height: 180px;
+      overflow-y: auto;
+      font-size: 0.75rem;
+      font-family: monospace;
+    }
+
+    .data-log li {
+      background-color: var(--card-bg);
+      padding: 0.4rem 0.6rem;
+      border-radius: 4px;
+      border-left: 2px solid var(--accent-red);
+      color: var(--text-muted);
+    }
+
+    /* ANIMACIONES SVG */
+    @keyframes pulse-glow {
+      0% { filter: drop-shadow(0 0 2px rgba(88, 166, 255, 0.4)); }
+      50% { filter: drop-shadow(0 0 10px rgba(88, 166, 255, 0.9)); }
+      100% { filter: drop-shadow(0 0 2px rgba(88, 166, 255, 0.4)); }
+    }
+
+    @keyframes float-loop {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-6px); }
+      100% { transform: translateY(0px); }
+    }
+
+    @keyframes data-stream {
+      0% { stroke-dashoffset: 100; }
+      100% { stroke-dashoffset: 0; }
+    }
+
+    .animated-pulse { animation: pulse-glow 2s infinite ease-in-out; }
+    .animated-float { animation: float-loop 3s infinite ease-in-out; }
+    
+    /* MODAL PEDAGÓGICO DE CIERRE */
+    .modal-overlay {
+      position: fixed;
+      top:0; left:0; right:0; bottom:0;
+      background: rgba(0,0,0,0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      padding: 1rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      background-color: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      max-width: 650px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      box-shadow: var(--shadow);
+    }
+
+    .modal-card h2 {
+      color: var(--accent-cyan);
+    }
+
+    .reflection-questions {
+      background-color: var(--card-bg);
+      padding: 1rem;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      font-size: 0.88rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="brand">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+        <line x1="12" y1="18" x2="12.01" y2="18"></line>
+      </svg>
+      <h1>El Laberinto de las Condiciones</h1>
+      <span>Cobo Critical Sim</span>
+    </div>
+    <div class="controls">
+      <button class="btn-icon" id="soundToggleBtn" onclick="toggleSound()">
+        <span id="soundIcon">🔊</span> <span id="soundLabel">Audio: ON</span>
+      </button>
+      <button class="btn-icon" onclick="toggleTheme()">
+        🌗 Tema
+      </button>
+    </div>
+  </header>
+
+  <!-- NAVEGACIÓN DE ETAPAS -->
+  <nav class="stage-tracker" id="stageTracker">
+    <div class="step-item active" id="step-1"><div class="circle">1</div> T&C</div>
+    <div class="step-item" id="step-2"><div class="circle">2</div> Algoritmo</div>
+    <div class="step-item" id="step-3"><div class="circle">3</div> Espejo Data</div>
+    <div class="step-item" id="step-4"><div class="circle">4</div> Feudalismo</div>
+    <div class="step-item" id="step-5"><div class="circle">5</div> Agencia</div>
+  </nav>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main>
+    <!-- SECCIÓN INTERACTIVA NARRATIVA -->
+    <section class="stage-container">
+      <div class="stage-header">
+        <h2 id="stageTitle">Cargando Etapa...</h2>
+        <div class="subtitle" id="stageSubtitle">Subtítulo de etapa</div>
+      </div>
+
+      <!-- ESCENARIO VECTORIAL SVG -->
+      <div class="svg-viewport" id="svgContainer">
+        <!-- El contenido SVG dinámico se renderiza con JS -->
+      </div>
+
+      <!-- TEXTO Y CITAS -->
+      <div class="narrative-box">
+        <p id="narrativeText">Cargando narrativa...</p>
+        <div class="quote-card" id="quoteCard">
+          "<span id="quoteText">Cita del texto</span>"
+          <br><strong id="quoteAuthor" style="font-size: 0.75rem; color: var(--text-main);">- Cristóbal Cobo, Acepto las condiciones</strong>
+        </div>
+      </div>
+
+      <!-- BIFURCACIÓN DE DECISIONES -->
+      <div class="interaction-area">
+        <h3 id="decisionHeader">Toma una decisión:</h3>
+        <div class="options-grid" id="optionsGrid">
+          <!-- Botones generados dinámicamente -->
+        </div>
+      </div>
+    </section>
+
+    <!-- DASHBOARD DE MÉTRICAS CRÍTICAS -->
+    <aside class="metrics-sidebar">
+      <div class="widget">
+        <h3>Métricas del Ciudadano Digital</h3>
+        
+        <div class="metric-gauge">
+          <div class="gauge-label">
+            <span>Autonomía Cognitiva</span>
+            <span id="autonomyVal">100%</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill success" id="autonomyBar" style="width: 100%;"></div>
+          </div>
+        </div>
+
+        <div class="metric-gauge">
+          <div class="gauge-label">
+            <span>Exposición / Rastreabilidad</span>
+            <span id="exposureVal">10%</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill warning" id="exposureBar" style="width: 10%;"></div>
+          </div>
+        </div>
+
+        <div class="metric-gauge">
+          <div class="gauge-label">
+            <span>Sobrecarga / Dopamina</span>
+            <span id="overloadVal">15%</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="overloadBar" style="width: 15%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="widget">
+        <h3>Huella de Datos Extraída</h3>
+        <ul class="data-log" id="dataLog">
+          <li>[Sistema]: Dispositivo detectado.</li>
+        </ul>
+      </div>
+    </aside>
+  </main>
+
+  <!-- MODAL FINAL REFLEXIVO -->
+  <div class="modal-overlay" id="finalModal">
+    <div class="modal-card">
+      <h2>🎉 Recorrido Finalizado: Diagnóstico Digital</h2>
+      <p id="modalSummary">Resumen de tu experiencia...</p>
+
+      <div class="reflection-questions">
+        <h4>Preguntas para el debate en aula (Alfabetismo Digital Crítico):</h4>
+        <ol style="padding-left: 1.2rem; display: flex; flex-direction: column; gap: 0.4rem;">
+          <li>¿En qué medida la conveniencia técnica nos lleva a "elegir no elegir" en nuestra cotidianidad?</li>
+          <li>¿Cómo cambian las relaciones de poder cuando las decisiones las toman algoritmos no auditables?</li>
+          <li>¿Qué acciones concretas podemos implementar para transitar del "Smartphone Zombie" a la soberanía tecnológica?</li>
+        </ol>
+      </div>
+
+      <button class="option-btn" style="text-align:center; background: var(--accent-cyan); color:#fff; font-weight:bold;" onclick="restartExperience()">
+        🔄 Reiniciar la Experiencia
+      </button>
+    </div>
+  </div>
+
+  <script>
+    /* ==========================================================================
+       SISTEMA DE AUDIO SINTETIZADO (Web Audio API - Sin archivos externos)
+       ========================================================================== */
+    let audioEnabled = true;
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playSound(type) {
+      if (!audioEnabled) return;
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      const now = audioCtx.currentTime;
+
+      if (type === 'click') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(400, now);
+        osc.frequency.exponentialRampToValueAtTime(800, now + 0.05);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+        osc.start(now);
+        osc.stop(now + 0.05);
+      } else if (type === 'notification') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(523.25, now); // C5
+        osc.frequency.setValueAtTime(659.25, now + 0.08); // E5
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+        osc.start(now);
+        osc.stop(now + 0.25);
+      } else if (type === 'alert') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(200, now);
+        osc.frequency.linearRampToValueAtTime(100, now + 0.2);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
+        osc.start(now);
+        osc.stop(now + 0.2);
+      } else if (type === 'success') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(440, now);
+        osc.frequency.setValueAtTime(880, now + 0.12);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+        osc.start(now);
+        osc.stop(now + 0.3);
+      }
+    }
+
+    function toggleSound() {
+      audioEnabled = !audioEnabled;
+      document.getElementById('soundIcon').innerText = audioEnabled ? '🔊' : '🔇';
+      document.getElementById('soundLabel').innerText = audioEnabled ? 'Audio: ON' : 'Audio: OFF';
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle('light-theme');
+      playSound('click');
+    }
+
+    /* ==========================================================================
+       ESTADO DEL JUEGO Y MÉTRICAS
+       ========================================================================== */
+    let gameState = {
+      currentStage: 1,
+      autonomy: 100,
+      exposure: 10,
+      overload: 15,
+      dataHarvested: ['Dispositivo detectado', 'IP aproximada: Bogotá']
+    };
+
+    function updateMetrics(autonomyDiff, exposureDiff, overloadDiff, newDataItem = null) {
+      gameState.autonomy = Math.max(0, Math.min(100, gameState.autonomy + autonomyDiff));
+      gameState.exposure = Math.max(0, Math.min(100, gameState.exposure + exposureDiff));
+      gameState.overload = Math.max(0, Math.min(100, gameState.overload + overloadDiff));
+
+      // Actualizar UI Bars
+      document.getElementById('autonomyVal').innerText = gameState.autonomy + '%';
+      const aBar = document.getElementById('autonomyBar');
+      aBar.style.width = gameState.autonomy + '%';
+      aBar.className = 'progress-fill ' + (gameState.autonomy < 30 ? 'danger' : gameState.autonomy < 60 ? 'warning' : 'success');
+
+      document.getElementById('exposureVal').innerText = gameState.exposure + '%';
+      const eBar = document.getElementById('exposureBar');
+      eBar.style.width = gameState.exposure + '%';
+      eBar.className = 'progress-fill ' + (gameState.exposure > 70 ? 'danger' : gameState.exposure > 40 ? 'warning' : 'success');
+
+      document.getElementById('overloadVal').innerText = gameState.overload + '%';
+      const oBar = document.getElementById('overloadBar');
+      oBar.style.width = gameState.overload + '%';
+      oBar.className = 'progress-fill ' + (gameState.overload > 70 ? 'danger' : gameState.overload > 40 ? 'warning' : '');
+
+      if (newDataItem) {
+        gameState.dataHarvested.push(newDataItem);
+        const dataLogEl = document.getElementById('dataLog');
+        const li = document.createElement('li');
+        li.innerText = `[+DATO]: ${newDataItem}`;
+        dataLogEl.appendChild(li);
+        dataLogEl.scrollTop = dataLogEl.scrollHeight;
+      }
+    }
+
+    /* ==========================================================================
+       DATOS DE LAS 5 ETAPAS (Basado en Cristóbal Cobo)
+       ========================================================================== */
+    const stages = {
+      1: {
+        title: "1. El Botón de 'Aceptar'",
+        subtitle: "Aceptación ciega de condiciones y cesión de datos inicial",
+        quote: "Nuestra sobrecarga diaria nos lleva a transferir atribuciones a los sistemas digitales... 'Eligiendo no elegir' es lo que hacemos la mayoría cuando aceptamos los servicios en línea de forma predeterminada.",
+        author: "Cristóbal Cobo (Cap. 1, p. 28)",
+        renderSVG: () => `
+          <svg width="100%" height="100%" viewBox="0 0 400 240">
+            <!-- Movil mockup -->
+            <rect x="120" y="20" width="160" height="200" rx="12" fill="#161b22" stroke="#58a6ff" stroke-width="2"/>
+            <rect x="135" y="35" width="130" height="130" rx="4" fill="#21262d"/>
+            <text x="200" y="65" font-size="11" fill="#f0f6fc" text-anchor="middle" font-weight="bold">TÉRMINOS DE SERVICIO</text>
+            <text x="200" y="85" font-size="8" fill="#8b949e" text-anchor="middle">Contrato de 48 páginas</text>
+            <text x="200" y="100" font-size="8" fill="#8b949e" text-anchor="middle">Cedes datos de ubicación,</text>
+            <text x="200" y="112" font-size="8" fill="#8b949e" text-anchor="middle">contactos y conducta.</text>
+
+            <!-- Boton pulsante -->
+            <g class="animated-pulse" style="cursor:pointer;" onclick="makeChoice(1, 'fast')">
+              <rect x="145" y="130" width="110" height="25" rx="6" fill="#238636"/>
+              <text x="200" y="146" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="bold">ACEPTAR TODO</text>
+            </g>
+            <!-- Avatar Zombie -->
+            <circle cx="60" cy="180" r="18" fill="#8b949e"/>
+            <path d="M 45 220 Q 60 195 75 220" stroke="#8b949e" stroke-width="3" fill="none"/>
+            <path d="M 78 180 L 120 145" stroke="#58a6ff" stroke-width="2" stroke-dasharray="4,4"/>
+          </svg>
+        `,
+        narrative: "Instalas una nueva aplicación de productividad clave para tus estudios. Para continuar, la pantalla despliega un contrato de términos y condiciones de 15,000 palabras. El botón verde 'Aceptar todo' brilla con intensidad.",
+        options: [
+          {
+            title: "⚡ Aceptar Rápido ('Elegir no elegir')",
+            desc: "Cliquear sin leer para ahorrar tiempo y empezar de inmediato.",
+            action: () => {
+              playSound('notification');
+              updateMetrics(-15, +25, +5, "Historial de contactos y GPS libre");
+              nextStage(2);
+            }
+          },
+          {
+            title: "🔍 Auditar Permisos Digitales",
+            desc: "Revisar la configuración y denegar accesos innecesarios a micrófono y ubicación.",
+            action: () => {
+              playSound('click');
+              updateMetrics(+10, -5, +5, "Permisos restringidos manualmente");
+              nextStage(2);
+            }
+          }
+        ]
+      },
+
+      2: {
+        title: "2. El Algoritmo de Atención",
+        subtitle: "Bucle de contenido infinito y estimulación dopaminérgica",
+        quote: "Si distribuyes la atención, también la diluyes... En vez de personas con más poder, vemos cada vez más 'smartphone zombies' preocupados por estar al día.",
+        author: "Cristóbal Cobo (Cap. 1, p. 26)",
+        renderSVG: () => `
+          <svg width="100%" height="100%" viewBox="0 0 400 240">
+            <!-- Bucle infinito SVG -->
+            <path d="M 120 120 C 120 70, 200 70, 200 120 C 200 170, 280 170, 280 120 C 280 70, 200 70, 200 120 C 200 170, 120 170, 120 120 Z" 
+                  fill="none" stroke="#f85149" stroke-width="4" stroke-dasharray="8 4" class="animated-pulse"/>
+            
+            <!-- Notificaciones flotantes -->
+            <g class="animated-float">
+              <rect x="250" y="40" width="80" height="24" rx="12" fill="#d29922"/>
+              <text x="290" y="56" font-size="9" fill="#fff" text-anchor="middle">🔥 ¡Nuevo Like!</text>
+            </g>
+            <g class="animated-float" style="animation-delay: 1.5s;">
+              <rect x="70" y="160" width="90" height="24" rx="12" fill="#58a6ff"/>
+              <text x="115" y="176" font-size="9" fill="#fff" text-anchor="middle">⚡ Recomendado</text>
+            </g>
+
+            <!-- Smartphone Zombie avatar -->
+            <circle cx="200" cy="120" r="14" fill="#3fb950"/>
+            <text x="200" y="210" font-size="10" fill="#8b949e" text-anchor="middle">Bucle de Scroll Infinito</text>
+          </svg>
+        `,
+        narrative: "Entras a la red social por 2 minutos para buscar un dato académico. El algoritmo detecta tus inclinaciones y empieza a desplegar un hilo infinito de videos ultra-estimulantes adaptados a tu perfil psicológico.",
+        options: [
+          {
+            title: "📱 Cedérselo al Scroll Infinito",
+            desc: "Seguir consumiendo las sugerencias automáticas del algoritmo.",
+            action: () => {
+              playSound('alert');
+              updateMetrics(-25, +20, +35, "Patrón de atención capturado (45 min)");
+              nextStage(3);
+            }
+          },
+          {
+            title: "⏱️ Establecer Silencio Digital",
+            desc: "Cerrar la app y activar un temporizador de concentración autónoma.",
+            action: () => {
+              playSound('success');
+              updateMetrics(+20, -10, -15, "Pausa cognitiva voluntaria activa");
+              nextStage(3);
+            }
+          }
+        ]
+      },
+
+      3: {
+        title: "3. El Espejo de Datos",
+        subtitle: "Visualización de la huella digital y perfiles predictivos",
+        quote: "La información reunida se somete a avanzados análisis para luego comercializarse en los emergentes mercados de predicción y modificación del comportamiento.",
+        author: "Cristóbal Cobo (Intro, p. 28)",
+        renderSVG: () => `
+          <svg width="100%" height="100%" viewBox="0 0 400 240">
+            <!-- Espejo de datos -->
+            <rect x="140" y="30" width="120" height="170" rx="8" fill="#161b22" stroke="#58a6ff" stroke-width="2"/>
+            <!-- Avatar de puntos (data shadow) -->
+            <circle cx="200" cy="80" r="20" fill="none" stroke="#f85149" stroke-width="2" stroke-dasharray="2 2"/>
+            <path d="M 180 120 Q 200 100 220 120" stroke="#f85149" stroke-width="2" fill="none"/>
+            <text x="200" y="145" font-size="8" fill="#58a6ff" text-anchor="middle">Predicción: Voto X</text>
+            <text x="200" y="158" font-size="8" fill="#58a6ff" text-anchor="middle">Ansiedad: Alta (87%)</text>
+            <text x="200" y="171" font-size="8" fill="#58a6ff" text-anchor="middle">Valor Comercial: $12.4 USD</text>
+            
+            <!-- Conexión de red de vigilancia -->
+            <line x1="60" y1="115" x2="140" y2="115" stroke="#30363d" stroke-width="2"/>
+            <line x1="260" y1="115" x2="340" y2="115" stroke="#30363d" stroke-width="2"/>
+            <circle cx="60" cy="115" r="12" fill="#21262d" stroke="#d29922"/>
+            <text x="60" y="119" font-size="8" fill="#fff" text-anchor="middle">Data Broker</text>
+          </svg>
+        `,
+        narrative: "Descubres una pestaña oculta de la plataforma: 'El Espejo de Datos'. Muestra tu 'sombra digital', una recreación exacta de tus miedos, sesgos, estado de ánimo y predicciones de compra vendidas a anunciantes.",
+        options: [
+          {
+            title: "🙈 Ignorar y Continuar",
+            desc: "Asumir que es el costo normal de usar servicios web gratuitos.",
+            action: () => {
+              playSound('notification');
+              updateMetrics(-20, +30, +10, "Perfil predictivo consolidado");
+              nextStage(4);
+            }
+          },
+          {
+            title: "🛡️ Solicitar Descarga y Borrado (GDPR/Derecho al Olvido)",
+            desc: "Exigir la depuración de la huella digital y usar herramientas de privacidad.",
+            action: () => {
+              playSound('success');
+              updateMetrics(+25, -25, -10, "Solicitud de anonimización enviada");
+              nextStage(4);
+            }
+          }
+        ]
+      },
+
+      4: {
+        title: "4. La Burbuja / Feudalismo Digital",
+        subtitle: "Delegación de decisiones, cámaras de eco y asimetría de poder",
+        quote: "Vivimos una suerte de feudalismo digital en el que unos pocos administran los datos y una gran población los entrega sin recibir compensación.",
+        author: "Cristóbal Cobo (Antes de empezar, p. 5)",
+        renderSVG: () => `
+          <svg width="100%" height="100%" viewBox="0 0 400 240">
+            <!-- Castillo de las Big Tech -->
+            <polygon points="200,40 240,90 160,90" fill="#58a6ff"/>
+            <rect x="170" y="90" width="60" height="50" fill="#21262d" stroke="#58a6ff"/>
+            <text x="200" y="115" font-size="9" fill="#fff" text-anchor="middle">BIG TECH</text>
+
+            <!-- Muralla/Burbuja del Feudo -->
+            <circle cx="200" cy="140" r="85" fill="none" stroke="#d29922" stroke-width="2" stroke-dasharray="6 4"/>
+            
+            <!-- Vasallos de Datos afuera -->
+            <circle cx="100" cy="190" r="8" fill="#8b949e"/>
+            <circle cx="300" cy="190" r="8" fill="#8b949e"/>
+            <text x="200" y="215" font-size="9" fill="#d29922" text-anchor="middle">Burbuja de Filtros (Cámara de Eco)</text>
+          </svg>
+        `,
+        narrative: "Te das cuenta de que el motor de búsqueda y la red social solo te muestran noticias e ideas que confirman lo que ya piensas. Estás atrapado en un 'Feudo Digital' guiado por el 'Poder Gris' de los algoritmos.",
+        options: [
+          {
+            title: "🏰 Permanecer en el Feudo Confortable",
+            desc: "Dejar que la plataforma elija las noticias, lecturas y respuestas por ti.",
+            action: () => {
+              playSound('alert');
+              updateMetrics(-30, +15, +20, "Dependencia de intermediarios 100%");
+              nextStage(5);
+            }
+          },
+          {
+            title: "🌐 Romper la Cámara de Eco",
+            desc: "Consultar activamente fuentes abiertas, contrastar visiones y usar software libre.",
+            action: () => {
+              playSound('success');
+              updateMetrics(+30, -20, -10, "Buscadores descentralizados activados");
+              nextStage(5);
+            }
+          }
+        ]
+      },
+
+      5: {
+        title: "5. Desconexión Crítica / Agencia Digital",
+        subtitle: "Soberanía tecnológica y Alfabetismo Digital Crítico",
+        quote: "Una mejora en la alfabetización digital crítica guarda relación con entender que ser digitalmente competente es más que obtener habilidades tecnológicas aisladas.",
+        author: "Cristóbal Cobo (Intro, p. 30)",
+        renderSVG: () => `
+          <svg width="100%" height="100%" viewBox="0 0 400 240">
+            <!-- Ciudadano Empoderado / Soberanía -->
+            <circle cx="200" cy="100" r="30" fill="#238636" class="animated-pulse"/>
+            <path d="M 200 85 L 200 115 M 185 100 L 215 100" stroke="#fff" stroke-width="4"/>
+            
+            <text x="200" y="160" font-size="12" fill="#3fb950" text-anchor="middle" font-weight="bold">SOBERANÍA TECNOLÓGICA</text>
+            <text x="200" y="180" font-size="9" fill="#8b949e" text-anchor="middle">Elegir Elegir | Pensamiento Crítico | Redes Abiertas</text>
+          </svg>
+        `,
+        narrative: "Llegas al final del laberinto. Tienes la oportunidad de redefinir tu relación con las tecnologías digitales: ¿Serás un consumido por el consumo o un ciudadano crítico con autonomía cognitiva?",
+        options: [
+          {
+            title: "🎓 Adoptar el Alfabetismo Digital Crítico",
+            desc: "Transformar la relación con la tecnología en la educación y la vida personal.",
+            action: () => {
+              playSound('success');
+              updateMetrics(+20, -10, -20, "Estrategia de Agencia Digital activada");
+              showFinalModal();
+            }
+          }
+        ]
+      }
+    };
+
+    /* ==========================================================================
+       LÓGICA DE NAVEGACIÓN Y RENDERIZADO
+       ========================================================================== */
+    function renderStage(stageId) {
+      const stage = stages[stageId];
+      if (!stage) return;
+
+      document.getElementById('stageTitle').innerText = stage.title;
+      document.getElementById('stageSubtitle').innerText = stage.subtitle;
+      document.getElementById('svgContainer').innerHTML = stage.renderSVG();
+      document.getElementById('narrativeText').innerText = stage.narrative;
+      document.getElementById('quoteText').innerText = stage.quote;
+      document.getElementById('quoteAuthor').innerText = `- ${stage.author}`;
+
+      // Render opciones
+      const grid = document.getElementById('optionsGrid');
+      grid.innerHTML = '';
+
+      stage.options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerHTML = `<strong>${opt.title}</strong><span>${opt.desc}</span>`;
+        btn.onclick = opt.action;
+        grid.appendChild(btn);
+      });
+
+      // Actualizar tracker visual
+      for (let i = 1; i <= 5; i++) {
+        const el = document.getElementById(`step-${i}`);
+        el.className = 'step-item';
+        if (i < stageId) el.classList.add('completed');
+        if (i === stageId) el.classList.add('active');
+      }
+    }
+
+    function nextStage(targetStage) {
+      gameState.currentStage = targetStage;
+      renderStage(targetStage);
+    }
+
+    function makeChoice(stageId, type) {
+      if (stageId === 1 && type === 'fast') {
+        stages[1].options[0].action();
+      }
+    }
+
+    function showFinalModal() {
+      const modal = document.getElementById('finalModal');
+      const summary = document.getElementById('modalSummary');
+
+      let statusMessage = "";
+      if (gameState.autonomy >= 70) {
+        statusMessage = "🌟 **Ciudadano Digital Autónomo**: Lograste mantener tu autonomía cognitiva y cuestionar las asimetrías de poder de las plataformas.";
+      } else if (gameState.autonomy >= 40) {
+        statusMessage = "⚠️ **Sujeto en Transición**: Muestras momentos de reflexión crítica, pero sigues cediendo parcelas de privacidad por conveniencia.";
+      } else {
+        statusMessage = "🧟 **Smartphone Zombie / Vasallo de Datos**: Questaste inmerso en la inercia del 'elegir no elegir', entregando tus datos y atención al Feudo Digital.";
+      }
+
+      summary.innerHTML = `
+        <strong>Diagnóstico final:</strong><br>${statusMessage}<br><br>
+        📊 <strong>Estadísticas acumuladas:</strong><br>
+        • Autonomía Cognitiva final: <strong>${gameState.autonomy}%</strong><br>
+        • Exposición de Datos: <strong>${gameState.exposure}%</strong><br>
+        • Sobrecarga de Atención: <strong>${gameState.overload}%</strong>
+      `;
+
+      modal.classList.add('active');
+    }
+
+    function restartExperience() {
+      gameState = {
+        currentStage: 1,
+        autonomy: 100,
+        exposure: 10,
+        overload: 15,
+        dataHarvested: ['Dispositivo detectado', 'IP aproximada: Bogotá']
+      };
+      document.getElementById('dataLog').innerHTML = '<li>[Sistema]: Dispositivo detectado.</li>';
+      updateMetrics(0, 0, 0);
+      document.getElementById('finalModal').classList.remove('active');
+      renderStage(1);
+    }
+
+    // Inicialización al cargar la página
+    window.addEventListener('DOMContentLoaded', () => {
+      renderStage(1);
+    });
+  </script>
+</body>
+</html>
